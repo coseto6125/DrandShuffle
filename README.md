@@ -16,14 +16,14 @@ drand 是一個分散式隨機信標網絡，由多個獨立節點組成，這�
 
 ```
 go_drand/
-├── drand_shuffle/      # 核心庫
+├── drandshuffle/      # 核心庫
 │   ├── drand_manager.go # drand 客戶端管理器
 │   ├── shuffle.go      # 洗牌和卡片處理邏輯
 │   └── shuffle_mock.go # 測試用的模擬實現
 ├── examples/           # 示例應用
-│   ├── integrated/     # 使用 drand_shuffle 庫的集成實現
+│   ├── integrated/     # 使用 drandshuffle 庫的集成實現
 │   │   └── texas_holdem.go
-│   └── standalone/     # 獨立實現（不依賴 drand_shuffle 庫）
+│   └── standalone/     # 獨立實現（不依賴 drandshuffle 庫）
 │       ├── texas_holdem.go
 │       └── server.go   # 持續運行的服務（獨立實現）
 └── tests/              # 測試
@@ -45,7 +45,7 @@ go_drand/
 
 ### 概述
 
-集成實現使用 `drand_shuffle` 庫作為核心組件，提供了一個封裝完善的解決方案，適合需要持續運行服務的場景。
+集成實現使用 `drandshuffle` 庫作為核心組件，提供了一個封裝完善的解決方案，適合需要持續運行服務的場景。
 
 ### 架構
 
@@ -80,11 +80,11 @@ go run texas_holdem.go 16173144 game_12345
 
 ```go
 import (
-    "go_drand/drand_shuffle"
+    "go_drand/drandshuffle"
 )
 
 // 獲取 DrandManager 實例
-drandManager, err := drand_shuffle.GetDrandManager()
+drandManager, err := drandshuffle.GetDrandManager()
 if err != nil {
     log.Fatalf("無法初始化 DrandManager: %v", err)
 }
@@ -101,7 +101,7 @@ if err != nil {
 
 // 使用隨機性進行洗牌
 gameSessionID := "your_game_session_id"
-shuffledDeck, _, err := drand_shuffle.GetShuffledDeck(gameSessionID)
+shuffledDeck, _, err := drandshuffle.GetShuffledDeck(gameSessionID)
 if err != nil {
     log.Fatalf("無法獲取洗牌後的牌組: %v", err)
 }
@@ -121,7 +121,7 @@ if err != nil {
 
 ### 概述
 
-獨立實現完全不依賴於 `drand_shuffle` 庫，直接使用 drand 客戶端庫，專為高併發環境設計，提供了更靈活的實現方式。
+獨立實現完全不依賴於 `drandshuffle` 庫，直接使用 drand 客戶端庫，專為高併發環境設計，提供了更靈活的實現方式。
 
 ### 架構
 

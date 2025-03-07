@@ -1,4 +1,4 @@
-package drand_shuffle
+package drandshuffle
 
 import (
 	"crypto/sha256"

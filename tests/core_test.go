@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"go_drand/drand_shuffle"
+	"go_drand/drandshuffle"
 )
 
 // TestCardConversion 測試牌的字符串轉換功能
@@ -59,12 +59,12 @@ func TestCardConversion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			card, err := drand_shuffle.StringToCard(tc.cardString)
+			card, err := drandshuffle.StringToCard(tc.cardString)
 
 			if tc.expectedOk {
 				assert.NoError(t, err)
 				// 測試轉換回字符串
-				cardString := drand_shuffle.CardToString(card)
+				cardString := drandshuffle.CardToString(card)
 				assert.Equal(t, tc.cardString, cardString)
 			} else {
 				assert.Error(t, err)
@@ -78,7 +78,7 @@ func TestCardConversion(t *testing.T) {
 func TestInitializeDeck(t *testing.T) {
 	t.Run("Test deck initialization", func(t *testing.T) {
 		// 創建一個標準牌組
-		deck := drand_shuffle.InitializeDeck()
+		deck := drandshuffle.InitializeDeck()
 
 		// 驗證牌組包含52張牌
 		assert.Equal(t, 52, len(deck), "Deck should contain 52 cards")
@@ -127,17 +127,17 @@ func TestShuffleDeck(t *testing.T) {
 		assert.NoError(t, err2, "Failed to generate random bytes 2")
 
 		// 創建一個標準牌組
-		deck := drand_shuffle.InitializeDeck()
+		deck := drandshuffle.InitializeDeck()
 
 		// 使用不同的隨機數據洗牌
-		shuffled1 := drand_shuffle.ShuffleDeck(deck, randomBytes1)
-		shuffled2 := drand_shuffle.ShuffleDeck(deck, randomBytes2)
+		shuffled1 := drandshuffle.ShuffleDeck(deck, randomBytes1)
+		shuffled2 := drandshuffle.ShuffleDeck(deck, randomBytes2)
 
 		// 檢查兩次洗牌結果是否不同
 		// 注意：理論上有極小的可能性兩次洗牌結果相同，但概率非常低
 		different := false
 		for i := 0; i < len(shuffled1); i++ {
-			if drand_shuffle.CardToString(shuffled1[i]) != drand_shuffle.CardToString(shuffled2[i]) {
+			if drandshuffle.CardToString(shuffled1[i]) != drandshuffle.CardToString(shuffled2[i]) {
 				different = true
 				break
 			}
@@ -155,15 +155,15 @@ func TestShuffleDeck(t *testing.T) {
 		shuffledCards2 := make(map[string]bool)
 
 		for _, card := range deck {
-			originalCards[drand_shuffle.CardToString(card)] = true
+			originalCards[drandshuffle.CardToString(card)] = true
 		}
 
 		for _, card := range shuffled1 {
-			shuffledCards1[drand_shuffle.CardToString(card)] = true
+			shuffledCards1[drandshuffle.CardToString(card)] = true
 		}
 
 		for _, card := range shuffled2 {
-			shuffledCards2[drand_shuffle.CardToString(card)] = true
+			shuffledCards2[drandshuffle.CardToString(card)] = true
 		}
 
 		// 確保所有原始牌都在洗牌後的牌組中

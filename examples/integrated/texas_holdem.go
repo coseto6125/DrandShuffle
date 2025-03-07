@@ -9,16 +9,16 @@ import (
 	"strconv"
 	"time"
 
-	"go_drand/drand_shuffle"
+	"go_drand/drandshuffle"
 )
 
 // 德州撲克遊戲狀態
 type TexasHoldemGame struct {
 	// 玩家手牌，每個玩家2張牌
-	PlayerHands map[int][]drand_shuffle.Card
+	PlayerHands map[int][]drandshuffle.Card
 
 	// 公共牌（翻牌、轉牌、河牌）
-	CommunityCards []drand_shuffle.Card
+	CommunityCards []drandshuffle.Card
 
 	// 使用的輪次號碼，用於驗證
 	Round uint64
@@ -33,20 +33,20 @@ func NewTexasHoldemGame(numPlayers int, round uint64, gameSessionID string) (*Te
 		return nil, fmt.Errorf("玩家數量必須在2到10之間")
 	}
 
-	var shuffledDeck []drand_shuffle.Card
+	var shuffledDeck []drandshuffle.Card
 	var err error
 	var newRound uint64
 
 	// 如果指定了輪次號碼，使用該輪次的隨機信標
 	if round > 0 {
-		shuffledDeck, err = drand_shuffle.GetShuffledDeckByRound(round, gameSessionID)
+		shuffledDeck, err = drandshuffle.GetShuffledDeckByRound(round, gameSessionID)
 		if err != nil {
 			return nil, fmt.Errorf("無法獲取洗牌後的牌組: %v", err)
 		}
 		newRound = round
 	} else {
 		// 否則使用最新的隨機信標
-		shuffledDeck, newRound, err = drand_shuffle.GetShuffledDeck(gameSessionID)
+		shuffledDeck, newRound, err = drandshuffle.GetShuffledDeck(gameSessionID)
 		if err != nil {
 			return nil, fmt.Errorf("無法獲取洗牌後的牌組: %v", err)
 		}
@@ -54,8 +54,8 @@ func NewTexasHoldemGame(numPlayers int, round uint64, gameSessionID string) (*Te
 
 	// 初始化遊戲
 	game := &TexasHoldemGame{
-		PlayerHands:    make(map[int][]drand_shuffle.Card),
-		CommunityCards: make([]drand_shuffle.Card, 0, 5),
+		PlayerHands:    make(map[int][]drandshuffle.Card),
+		CommunityCards: make([]drandshuffle.Card, 0, 5),
 		Round:          newRound,
 		GameSessionID:  gameSessionID,
 	}
@@ -120,7 +120,7 @@ func (g *TexasHoldemGame) GetGameSessionID() string {
 
 func main() {
 	// 初始化 DrandManager
-	drandManager, err := drand_shuffle.GetDrandManager()
+	drandManager, err := drandshuffle.GetDrandManager()
 	if err != nil {
 		log.Fatalf("無法初始化 DrandManager: %v", err)
 	}
