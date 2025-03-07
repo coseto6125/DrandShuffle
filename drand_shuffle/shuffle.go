@@ -14,8 +14,8 @@ type Card struct {
 	Value string // 點數
 }
 
-// 初始化標準52張撲克牌
-func initializeDeck() []Card {
+// InitializeDeck 初始化標準52張撲克牌
+func InitializeDeck() []Card {
 	suits := []string{"黑桃", "紅心", "方塊", "梅花"}
 	values := []string{"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"}
 
@@ -30,8 +30,8 @@ func initializeDeck() []Card {
 	return deck
 }
 
-// 使用Fisher-Yates算法洗牌
-func shuffleDeck(deck []Card, randomness []byte) []Card {
+// ShuffleDeck 使用Fisher-Yates算法洗牌
+func ShuffleDeck(deck []Card, randomness []byte) []Card {
 	shuffled := make([]Card, len(deck))
 	copy(shuffled, deck)
 
@@ -86,8 +86,8 @@ func GetShuffledDeck(gameSessionID string) ([]Card, uint64, error) {
 	extendedRandomness := hasher.Sum(randomness)
 
 	// 初始化並洗牌
-	deck := initializeDeck()
-	shuffledDeck := shuffleDeck(deck, extendedRandomness)
+	deck := InitializeDeck()
+	shuffledDeck := ShuffleDeck(deck, extendedRandomness)
 
 	return shuffledDeck, round, nil
 }
@@ -115,8 +115,8 @@ func GetShuffledDeckByRound(round uint64, gameSessionID string) ([]Card, error) 
 	extendedRandomness := hasher.Sum(randomness)
 
 	// 初始化並洗牌
-	deck := initializeDeck()
-	shuffledDeck := shuffleDeck(deck, extendedRandomness)
+	deck := InitializeDeck()
+	shuffledDeck := ShuffleDeck(deck, extendedRandomness)
 
 	return shuffledDeck, nil
 }
@@ -128,26 +128,30 @@ func CardToString(card Card) string {
 
 // StringToCard 將字符串表示轉換為牌
 func StringToCard(s string) (Card, error) {
-	if len(s) < 3 { // 至少需要3個字符：2個字符的花色 + 1個字符的點數
-		return Card{}, fmt.Errorf("無效的牌字符串: %s", s)
+	// 檢查空字符串或太短的字符串
+	if len(s) < 3 {
+		return Card{}, fmt.Errorf("無效的牌字符串")
 	}
 
 	// 驗證花色
 	validSuits := []string{"黑桃", "紅心", "方塊", "梅花"}
-	suit := ""
-	value := ""
+	var suit string
+	var value string
+	var found bool
 
 	// 嘗試匹配花色
 	for _, validSuit := range validSuits {
 		if strings.HasPrefix(s, validSuit) {
 			suit = validSuit
 			value = s[len(validSuit):]
+			found = true
 			break
 		}
 	}
 
-	if suit == "" {
-		return Card{}, fmt.Errorf("無效的花色: %s", s)
+	// 如果沒有找到有效的花色
+	if !found {
+		return Card{}, fmt.Errorf("無效的花色")
 	}
 
 	// 驗證點數
@@ -157,7 +161,7 @@ func StringToCard(s string) (Card, error) {
 		"J": true, "Q": true, "K": true,
 	}
 	if !validValues[value] {
-		return Card{}, fmt.Errorf("無效的點數: %s", value)
+		return Card{}, fmt.Errorf("無效的點數")
 	}
 
 	return Card{Suit: suit, Value: value}, nil

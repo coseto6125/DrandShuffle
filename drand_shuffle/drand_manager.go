@@ -11,13 +11,14 @@ import (
 
 	"github.com/drand/go-clients/client"
 	"github.com/drand/go-clients/client/http"
+	"github.com/drand/go-clients/drand"
 )
 
 // DrandManager 管理 drand 隨機信標的獲取和緩存
 type DrandManager struct {
-	client       client.Client
-	latestBeacon *client.Result
-	beaconCache  map[uint64]*client.Result
+	client       drand.Client
+	latestBeacon drand.Result
+	beaconCache  map[uint64]drand.Result
 	mutex        sync.RWMutex
 	stopChan     chan struct{}
 	isRunning    bool
@@ -34,7 +35,7 @@ func GetDrandManager() (*DrandManager, error) {
 	var initErr error
 	once.Do(func() {
 		instance = &DrandManager{
-			beaconCache: make(map[uint64]*client.Result),
+			beaconCache: make(map[uint64]drand.Result),
 			stopChan:    make(chan struct{}),
 		}
 		initErr = instance.initialize()
@@ -58,8 +59,14 @@ func (dm *DrandManager) initialize() error {
 	defer cancel()
 
 	// 創建 drand 客戶端
+	clients := http.ForURLs(ctx, nil, urls, chainHash)
+	if len(clients) == 0 {
+		return fmt.Errorf("無法創建 drand 客戶端")
+	}
+
+	// 使用 client.New 創建聚合客戶端
 	dm.client, err = client.New(
-		client.From(http.ForURLs(ctx, nil, urls, chainHash)...),
+		client.From(clients...),
 		client.WithChainHash(chainHash),
 	)
 
@@ -176,6 +183,7 @@ func (dm *DrandManager) GetLatestRandomness() ([]byte, uint64, error) {
 	dm.mutex.RLock()
 	defer dm.mutex.RUnlock()
 
+	// 檢查是否已獲取隨機信標
 	if dm.latestBeacon == nil {
 		return nil, 0, fmt.Errorf("尚未獲取任何隨機信標")
 	}
