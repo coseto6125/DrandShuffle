@@ -53,6 +53,7 @@ drand 網絡使用分散式密鑰生成（DKG）協議來創建一個共享的�
 當需要生成隨機數時，每個節點使用其私鑰份額對當前輪次的信息進行簽名，然後將部分簽名發送給負責聚合的節點。一旦收集到足夠數量的部分簽名，就可以重建完整的簽名，該簽名即為該輪次的隨機信標。
 
 drand 目前運行多個網絡，包括：
+
 - **League of Entropy**：主要的 drand 網絡，由多個知名組織運行的節點組成。
 - **Quicknet**：每3秒產生一次隨機信標的快速網絡，適合需要高頻率隨機性的應用。
 
@@ -333,12 +334,12 @@ go func() {
             ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
             result, err := drandClient.Get(ctx, 0)
             cancel()
-            
+          
             if err != nil {
                 log.Printf("警告: 無法獲取最新隨機信標: %v", err)
                 continue
             }
-            
+          
             // 更新共享數據
             mu.Lock()
             latestRandomness = result.GetRandomness()
@@ -352,24 +353,24 @@ go func() {
 func handleGame(conn *websocket.Conn) {
     // 生成唯一的遊戲局號
     gameSessionID := generateSecureGameSessionID()
-    
+  
     // 安全地獲取最新的隨機信標
     mu.RLock()
     randomness := latestRandomness
     round := latestRound
     mu.RUnlock()
-    
+  
     // 創建足夠的隨機性
     hasher := sha256.New()
     hasher.Write(randomness)
     // 加入遊戲局號以確保不同局次有不同的洗牌結果
     hasher.Write([]byte(gameSessionID))
     extendedRandomness := hasher.Sum(randomness)
-    
+  
     // 初始化並洗牌
     deck := initializeDeck()
     shuffledDeck := shuffleDeck(deck, extendedRandomness)
-    
+  
     // 使用洗好的牌進行遊戲...
 }
 ```
@@ -398,13 +399,14 @@ func handleGame(conn *websocket.Conn) {
 測試分為以下幾類：
 
 1. **核心測試**：位於 `tests` 目錄，測試核心庫的基礎功能，如卡片轉換、牌組初始化和洗牌算法。
+
    ```
    tests/
    ├── core_test.go     # 測試基礎功能，如卡片轉換、牌組初始化和洗牌算法
    └── advanced_test.go # 測試進階功能，如錯誤處理和洗牌結果的可重現性
    ```
-
 2. **獨立測試**：位於 `tests/standalone` 目錄，包含完全獨立的測試，不依賴於核心庫。
+
    ```
    tests/standalone/
    ├── card_test.go   # 獨立測試卡片轉換功能
@@ -493,18 +495,23 @@ go get github.com/drand/go-clients
 ## 常見問題 (FAQ)
 
 ### Q1: 為什麼使用 drand 而不是普通的隨機數生成器？
+
 A1: drand 提供了公開可驗證的隨機性，這意味著任何人都可以驗證隨機數的生成過程是公平的。普通的隨機數生成器無法提供這種透明度和可驗證性，因此不適合需要高度公平性的場景，如線上賭博或撲克遊戲。
 
 ### Q2: drand 隨機信標每 3 秒產生一次，如果我在它產生完了才去取，流程是怎樣的？
+
 A2: 本系統設計了一個持續運行的服務，它會在後台每 3 秒自動獲取最新的隨機信標並緩存。當遊戲需要發牌時，它會使用已經緩存的最新隨機信標，而不需要等待。為了防止攻擊者預先獲取這個值並預測洗牌結果，我們引入了「遊戲局號」參數。即使攻擊者知道了隨機信標的值，如果不知道遊戲局號，也無法預測洗牌結果。
 
 ### Q3: 為什麼使用「遊戲局號」而不是「房間ID」？
+
 A3: 「遊戲局號」更準確地反映了這個參數的用途 - 它是針對特定一局遊戲的唯一識別符，而不是持久存在的房間。每開始一局新遊戲就應該生成一個新的遊戲局號，這樣可以確保每局遊戲的洗牌結果都是獨立且不可預測的。
 
 ### Q4: 如何生成安全的遊戲局號？
+
 A4: 遊戲局號應該是不可預測的，最好使用加密安全的隨機數生成器生成。在 Go 中，可以使用 `crypto/rand` 包生成隨機字節，然後轉換為字符串。
 
 ### Q5: 如果兩個不同的遊戲使用了相同的輪次號碼和遊戲局號，會發生什麼？
+
 A5: 它們會得到完全相同的洗牌結果。這就是為什麼遊戲局號必須是唯一的，特別是在同一個平台上運行的不同遊戲之間。建議將遊戲ID或時間戳作為遊戲局號的一部分，以確保唯一性。
 
 ## 貢獻
@@ -513,4 +520,4 @@ A5: 它們會得到完全相同的洗牌結果。這就是為什麼遊戲局號�
 
 ## 許可證
 
-本專案採用 MIT 許可證。 
+本專案採用 MIT 許可證。
